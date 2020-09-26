@@ -1,4 +1,3 @@
-import createDataContext from './createDataContext';
 import React, { useReducer, Dispatch } from 'react';
 import { Recipe } from '../constants/Types';
 import { RecipeActions, RecipesReducer } from '../context/RecipesReducer';

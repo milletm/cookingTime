@@ -1,0 +1,17 @@
+{
+  "title": "recipe__title",
+  "imgUrl": "recipe__img",
+  "time": "js-waitingTime",
+  "ingredients": [
+    {
+      "label": "article__label",
+      "quantity": "article__quantity"
+    }
+  ],
+  "instructions": [
+    {
+      "step": "step/text-step",
+      "instruction": "recipe__instruction"
+    }
+  ]
+}
