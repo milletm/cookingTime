@@ -11,7 +11,7 @@ export interface Recipe {
   id: string;
   title: string;
   imgUrl: string;
-  time: number;
+  time: string;
   ingredients: Ingredient[];
   instructions: Instruction[];
 }
