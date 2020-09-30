@@ -2,7 +2,7 @@
 
 ## Description :
 
-Cooking app
+Cooking app build with React-native, Expo, TypeScript
 
 ## Functionality :
 ### Done :
