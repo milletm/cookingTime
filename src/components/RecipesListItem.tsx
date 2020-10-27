@@ -1,4 +1,5 @@
-import React from 'react';
+import { StackNavigationProp } from "@react-navigation/stack";
+import React from "react";
 import {
   StyleSheet,
   Text,
@@ -6,15 +7,17 @@ import {
   TouchableOpacity,
   ListRenderItem,
   ImageBackground,
-} from 'react-native';
-import { Recipe } from '../constants/Types';
+} from "react-native";
+import { AppScreenParamList } from "../constants/AppScreenParamList";
+import { Recipe } from "../constants/Types";
+interface Props {
+  item: Recipe;
+  navigate: () => void;
+}
 
-const RecipesListItem: ListRenderItem<Recipe> = ({ item, navigation }) => {
+const RecipesListItem: React.FC<Props> = ({ item, navigate }) => {
   return (
-    <TouchableOpacity
-      activeOpacity={0.5}
-      onPress={() => navigation.navigate('Detail', { recipe: item })}
-    >
+    <TouchableOpacity activeOpacity={0.5} onPress={navigate}>
       <View style={styles.container}>
         <ImageBackground
           style={styles.backgroundImage}
@@ -46,26 +49,26 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     height: 250,
     borderRadius: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35,
   },
   textContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     paddingHorizontal: 10,
   },
   text: {
-    color: '#FFF',
-    fontFamily: 'Damascus',
+    color: "#FFF",
+    fontFamily: "Damascus",
   },
   title: {
-    width: '70%',
+    width: "70%",
     fontSize: 25,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    shadowColor: '#000',
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    shadowColor: "#000",
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35,

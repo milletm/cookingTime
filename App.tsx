@@ -1,14 +1,17 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import { RecipesProvider } from './src/context/RecipesContext';
-import Routes from './src/screens/Routes';
-import { StatusBar } from 'expo-status-bar';
+import React from "react";
+import { RecipesProvider } from "./src/context/RecipesContext";
+import Routes from "./src/screens/Routes";
+import { StatusBar } from "expo-status-bar";
+import { ShoppingListProvider } from "./src/context/ShoppingListContext";
 
-export default function App() {
+const App: React.FC = () => {
   return (
     <RecipesProvider>
-      <StatusBar style="dark" />
-      <Routes />
+      <ShoppingListProvider>
+        <StatusBar style="dark" />
+        <Routes />
+      </ShoppingListProvider>
     </RecipesProvider>
   );
-}
+};
+export default App;

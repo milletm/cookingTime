@@ -1,35 +1,31 @@
-import React, { useReducer, Dispatch } from 'react';
-import { Recipe } from '../constants/Types';
-import { RecipeActions, RecipesReducer } from '../context/RecipesReducer';
+import { Recipe } from "../constants/Types";
+import { createCtx } from "../helpers/createCtx";
 
-type InitialStateType = {
-  recipes: Recipe[];
+type State = Recipe[];
+const initialState: State = [];
+
+export type RecipesActions =
+  | {
+      type: "FETCH";
+      payload: Recipe[];
+    }
+  | {
+      type: "ADD";
+      payload: Recipe;
+    };
+
+export const reducer = (
+  recipeState: Recipe[],
+  action: RecipesActions
+): State => {
+  switch (action.type) {
+    case "FETCH":
+      return action.payload;
+    default:
+      return recipeState;
+  }
 };
 
-const initialState = {
-  recipes: [],
-};
-
-//Context
-const RecipesContext = React.createContext<{
-  state: InitialStateType;
-  dispatch: Dispatch<RecipeActions>;
-}>({
-  state: initialState,
-  dispatch: () => null,
-});
-
-const mainReducer = ({ recipes }: InitialStateType, action: RecipeActions) => ({
-  recipes: RecipesReducer(recipes, action),
-});
-
-const RecipesProvider: React.FC = ({ children }) => {
-  const [state, dispatch] = useReducer(mainReducer, initialState);
-
-  return (
-    <RecipesContext.Provider value={{ state, dispatch }}>
-      {children}
-    </RecipesContext.Provider>
-  );
-};
-export { RecipesProvider, RecipesContext };
+const [ctx, provider] = createCtx(reducer, initialState);
+export const RecipesContext = ctx;
+export const RecipesProvider = provider;

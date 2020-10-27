@@ -1,13 +1,13 @@
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Recipe } from "../constants/Types";
+import { Recipe, ShoppingItem } from "../constants/Types";
 
 export type AppScreenParamList = {
   App: undefined;
   Default: undefined;
   Home: undefined;
   Favorite: undefined;
-  ShoppingList: undefined;
+  ShoppingList: { shoppingList: ShoppingItem[] };
   Detail: { recipe: Recipe };
 };
 
