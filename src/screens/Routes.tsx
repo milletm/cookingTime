@@ -19,42 +19,37 @@ import {
   AsyncStorage,
 } from "react-native";
 import { Recipe } from "../constants/Types";
-import { ShoppingListContext } from "../context/ShoppingListContext";
 const Routes = () => {
   const { state: recipeState, dispatch: recipeDispatch } = useContext(
     RecipesContext
   );
-  const { dispatch: shoppingListDispatch } = useContext(ShoppingListContext);
   const navTheme = DefaultTheme;
   navTheme.colors.background = "#fff";
 
-  const getRecipes = () => {
-    setTimeout(() => {
-      const response: Recipe[] = recipes.recipes;
+  const getRecipes = async () => {
+    let response: Recipe[] = recipes.recipes;
+    const savedRecipes = await AsyncStorage.getItem("savedRecipes");
 
-      recipeDispatch({
-        type: "FETCH",
-        payload: response,
+    if (savedRecipes !== null) {
+      const savedRecipesArray = JSON.parse(savedRecipes);
+      response = recipes.recipes.map((recipe) => {
+        const recipeFound = savedRecipesArray.find(
+          (item: Recipe) => recipe.id === item.id
+        );
+        if (!!recipeFound) {
+          return recipeFound;
+        }
+        return recipe;
       });
-    }, 3000);
-  };
-
-  const getShoppingList = async () => {
-    const savedShoppingItems = await AsyncStorage.getItem("shoppingList");
-    let shoppingItems = [];
-
-    if (savedShoppingItems !== null) {
-      shoppingItems = JSON.parse(savedShoppingItems);
     }
-    shoppingListDispatch({
+    recipeDispatch({
       type: "FETCH",
-      payload: shoppingItems,
+      payload: response,
     });
   };
 
   useEffect(() => {
     getRecipes();
-    getShoppingList();
   }, []);
 
   if (!recipeState.length) {

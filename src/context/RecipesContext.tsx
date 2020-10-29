@@ -1,4 +1,4 @@
-import { Recipe } from "../constants/Types";
+import { Ingredient, Recipe } from "../constants/Types";
 import { createCtx } from "../helpers/createCtx";
 
 type State = Recipe[];
@@ -10,7 +10,7 @@ export type RecipesActions =
       payload: Recipe[];
     }
   | {
-      type: "ADD";
+      type: "UPDATE_RECIPES";
       payload: Recipe;
     };
 
@@ -21,6 +21,15 @@ export const reducer = (
   switch (action.type) {
     case "FETCH":
       return action.payload;
+    case "UPDATE_RECIPES":
+      const newRecipe = recipeState.map((item) => {
+        if (item.id === action.payload.id) {
+          return action.payload;
+        }
+        return item;
+      });
+
+      return newRecipe;
     default:
       return recipeState;
   }

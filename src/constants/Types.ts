@@ -16,6 +16,9 @@ export interface Recipe {
   time: string;
   ingredients: Ingredient[];
   instructions: Instruction[];
+  toShop?: boolean;
+  isFavorite?: boolean;
+  showIngredients?: boolean;
 }
 
 export interface ShoppingItem {

@@ -13,63 +13,64 @@ import {
   ScrollView,
 } from "react-native";
 import { ButtonGroup, ListItem, Button } from "react-native-elements";
-import { Ingredient } from "../constants/Types";
+import { Ingredient, Recipe } from "../constants/Types";
 import { MaterialIcons } from "@expo/vector-icons";
-import { ShoppingListContext } from "../context/ShoppingListContext";
+import { RecipesContext } from "../context/RecipesContext";
+import { saveRecipeLocalStorage } from "../helpers/recipeLocalStorage";
 
 interface ShoppingModalProps {
-  ingredients: Array<Ingredient>;
-  recipeId: string;
-  saveShoppingList: (ingredients: Ingredient[]) => void;
+  recipe: Recipe;
 }
-const ShoppingModal = ({
-  ingredients,
-  saveShoppingList,
-  recipeId,
-}: ShoppingModalProps) => {
+const ShoppingModal = ({ recipe }: ShoppingModalProps) => {
   const [shoppingItems, setShoppingItems] = useState<Array<Ingredient>>([]);
-  const { state: shoppingListState } = useContext(ShoppingListContext);
+  const { state, dispatch } = useContext(RecipesContext);
 
   useEffect(() => {
-    const currentShoppingItem = shoppingListState.find(
-      (item) => item.recipeId === recipeId
-    );
-
-    if (shoppingListState.length && currentShoppingItem) {
-      setShoppingItems(currentShoppingItem.ingredients);
-    }
+    setShoppingItems(recipe.ingredients);
   }, []);
 
   const handleChooseShoppingItems = (ingredient: Ingredient) => {
-    const newItemsList = shoppingItems.find(
-      (item) => item.label === ingredient.label
-    )
-      ? shoppingItems.filter((e) => e.label !== ingredient.label)
-      : [...shoppingItems, ingredient];
+    const updatedIngredientsList = shoppingItems.map((item) => {
+      if (item.label === ingredient.label) {
+        return { ...item, toShop: !item.toShop };
+      }
+      return item;
+    });
 
-    setShoppingItems(newItemsList);
+    setShoppingItems(updatedIngredientsList);
+  };
+  const handleCloseModal = async () => {
+    let updatedRecipe = recipe;
+    updatedRecipe.ingredients = shoppingItems;
+    recipe.showIngredients = false;
+    dispatch({
+      type: "UPDATE_RECIPES",
+      payload: recipe,
+    });
+    await saveRecipeLocalStorage(updatedRecipe);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        Ajouter les ingredients à la liste de course
-      </Text>
+      <TouchableOpacity onPress={handleCloseModal}>
+        <MaterialIcons
+          name="clear"
+          size={24}
+          color="grey"
+          style={styles.closeIcon}
+        />
+      </TouchableOpacity>
       <ScrollView style={styles.ingredientsListContainer}>
-        {ingredients.map((ingredient: Ingredient) => (
+        {shoppingItems.map((ingredient: Ingredient) => (
           <TouchableOpacity
             onPress={() => handleChooseShoppingItems(ingredient)}
             key={ingredient.label}
           >
             <ListItem>
               <MaterialIcons
-                name={
-                  shoppingItems.find((item) => item.label === ingredient.label)
-                    ? "remove-circle"
-                    : "add-circle-outline"
-                }
+                name={ingredient.toShop ? "shopping-basket" : "check-circle"}
                 size={24}
-                color="black"
+                color={ingredient.toShop ? "black" : "grey"}
               />
               <ListItem.Content style={styles.ingredientsList}>
                 <ListItem.Title
@@ -84,12 +85,6 @@ const ShoppingModal = ({
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <Button
-        style={styles.button}
-        type="outline"
-        title="Valider La liste"
-        onPress={() => saveShoppingList(shoppingItems)}
-      />
     </View>
   );
 };
@@ -103,12 +98,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   ingredientsListContainer: {
-    marginTop: 20,
-  },
-  title: {
-    fontSize: 18,
-    marginBottom: 25,
-    textAlign: "center",
+    marginTop: 10,
   },
   ingredientsList: {
     flex: 1,
@@ -122,5 +112,9 @@ const styles = StyleSheet.create({
   button: {
     marginHorizontal: 30,
     marginBottom: 20,
+  },
+  closeIcon: {
+    margin: 5,
+    alignSelf: "flex-end",
   },
 });

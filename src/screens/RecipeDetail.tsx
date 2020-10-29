@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -6,168 +6,145 @@ import {
   View,
   ScrollView,
   ImageBackground,
-  FlatList,
   SafeAreaView,
   TouchableOpacity,
-  AsyncStorage,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
-import Modal from "react-native-modal";
 import { AppNavProps } from "../constants/AppScreenParamList";
-import {
-  Recipe,
-  Ingredient,
-  Instruction,
-  ShoppingItem,
-} from "../constants/Types";
+import { Ingredient, Instruction } from "../constants/Types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ButtonGroup, ListItem, Button } from "react-native-elements";
 import { primary, lightgray, whitesmoke } from "../constants/Colors";
-import ShoppingModal from "../components/ShoppingModal";
-import { ShoppingListContext } from "../context/ShoppingListContext";
+import { useIsMount } from "../helpers/useIsMount";
+import { RecipesContext } from "../context/RecipesContext";
+import { saveRecipeLocalStorage } from "../helpers/recipeLocalStorage";
 
 const RecipeDetail = ({ route, navigation }: AppNavProps<"Detail">) => {
   const { recipe } = route.params;
+  const defaultHeaderStyle = {
+    backgroundColor: "transparent",
+  };
+
   const [currentTab, setCurrentTab] = useState(0);
-  const [favorite, setFavorite] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [shoppingItems, setShoppingItems] = useState<Array<Ingredient>>([]);
-  const {
-    state: shoppingListState,
-    dispatch: shoppingListDispatch,
-  } = useContext(ShoppingListContext);
+  const [headerStyle, setHeaderStyle] = useState(defaultHeaderStyle);
+  const [favorite, setFavorite] = useState(recipe.isFavorite);
+  const [toShop, setToShop] = useState(!recipe.toShop);
+
+  const { dispatch: recipeDispatch } = useContext(RecipesContext);
+  const isMount = useIsMount();
 
   const buttons = ["Ingredients", "Instructions"];
 
-  useEffect(() => {
-    saveShoppingListToLocaleStorage();
-  }, [shoppingListState]);
-
-  const updateIndex = (selectedIndex: number) => {
-    setCurrentTab(selectedIndex);
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const headerColor =
+      e.nativeEvent.contentOffset.y > 240
+        ? "rgba(255,255,255,1)"
+        : "transparent";
+    setHeaderStyle({
+      backgroundColor: headerColor,
+    });
   };
 
-  const handleSaveShoppingList = async (ingredients: Ingredient[]) => {
-    const shoppingItemIndex = shoppingListState.findIndex(
-      (item) => item.recipeId === recipe.id
-    );
-    if (
-      shoppingListState.length &&
-      shoppingItemIndex !== -1 &&
-      ingredients.length
-    ) {
-      // Update
-      shoppingListDispatch({
-        type: "UPDATE",
-        payload: {
-          shoppingItem: {
-            ingredients: ingredients,
-            recipeId: recipe.id,
-            recipeTitle: recipe.title,
-          },
-          index: shoppingItemIndex,
-        },
-      });
-    } else if (ingredients.length) {
-      // ADD
-      shoppingListDispatch({
-        type: "ADD",
-        payload: {
-          ingredients: ingredients,
-          recipeId: recipe.id,
-          recipeTitle: recipe.title,
-        },
-      });
-    } else {
-      // REMOVE
-      shoppingListDispatch({
-        type: "DELETE",
-        payload: shoppingItemIndex,
-      });
-    }
-    setModalVisible(false);
+  const handleChangeTab = (tabNumber: number) => {
+    setCurrentTab(tabNumber);
   };
 
-  const saveShoppingListToLocaleStorage = async () => {
-    await AsyncStorage.setItem(
-      "shoppingList",
-      JSON.stringify(shoppingListState)
-    );
-    const savedShoppingItems = await AsyncStorage.getItem("shoppingList");
+  const handleAddToShoppingList = async () => {
+    let updatedRecipe = recipe;
+
+    const shoppingIngredients: Ingredient[] = recipe.ingredients.map((item) => {
+      return { ...item, toShop: true };
+    });
+    updatedRecipe.ingredients = shoppingIngredients;
+    updatedRecipe.toShop = true;
+
+    recipeDispatch({
+      type: "UPDATE_RECIPES",
+      payload: updatedRecipe,
+    });
+    await saveRecipeLocalStorage(updatedRecipe);
+    setToShop(false);
   };
 
-  const handleChooseShoppingItems = (ingredient: Ingredient) => {
-    const newItemsList = shoppingItems.find(
-      (item) => item.label === ingredient.label
-    )
-      ? shoppingItems.filter((e) => e !== ingredient)
-      : [...shoppingItems, ingredient];
-    setShoppingItems(newItemsList);
-  };
+  const handleToogleFavorite = async () => {
+    let updatedRecipe = recipe;
+    recipe.isFavorite = !favorite;
+    recipeDispatch({
+      type: "UPDATE_RECIPES",
+      payload: updatedRecipe,
+    });
 
-  const handleToogleFavorite = () => {};
+    await saveRecipeLocalStorage(updatedRecipe);
+    setFavorite(!favorite);
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        <ImageBackground
-          style={styles.image}
-          source={{
-            uri: recipe.imgUrl,
-          }}
-        >
-          <SafeAreaView>
-            <View style={styles.topButtonsContainer}>
-              <View style={styles.topButton}>
-                <TouchableOpacity onPress={navigation.goBack}>
-                  <MaterialIcons
-                    name="keyboard-arrow-left"
-                    size={38}
-                    color={lightgray}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.topButton}>
-                <TouchableOpacity onPress={() => setFavorite(!favorite)}>
-                  <MaterialIcons
-                    name={favorite ? "favorite" : "favorite-border"}
-                    size={25}
-                    color={favorite ? primary : lightgray}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </SafeAreaView>
-        </ImageBackground>
-        <View style={styles.content}>
-          <Text style={styles.title}>{recipe.title}</Text>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoContent}>
-              <MaterialIcons name="timer" size={30} color={primary} />
-              <Text style={styles.infoText}>{recipe.time}</Text>
-            </View>
-            <View style={styles.infoContent}>
-              <MaterialIcons name="people-outline" size={30} color={primary} />
-              <Text style={styles.infoText}>2</Text>
-            </View>
+      <SafeAreaView style={[styles.headerContainer, headerStyle]}>
+        <View style={styles.topButtonsContainer}>
+          <View style={styles.topButton}>
+            <TouchableOpacity onPress={navigation.goBack}>
+              <MaterialIcons
+                name="keyboard-arrow-left"
+                size={38}
+                color={lightgray}
+              />
+            </TouchableOpacity>
           </View>
-          <ButtonGroup
-            onPress={updateIndex}
-            selectedIndex={currentTab}
-            buttons={buttons}
-            buttonStyle={styles.buttonStyle}
-            selectedButtonStyle={styles.selectedButtonStyle}
-            buttonContainerStyle={styles.buttonContainerStyle}
-            innerBorderStyle={styles.innerBorderStyle}
-            containerStyle={styles.containerStyle}
-          />
-          {currentTab === 0 && (
-            <View style={styles.ingredientsListContainer}>
-              {recipe.ingredients.map((ingredient: Ingredient) => (
-                <TouchableOpacity
-                  onPress={() => handleChooseShoppingItems(ingredient)}
-                  key={ingredient.label}
-                >
-                  <ListItem>
+          <View style={styles.topButton}>
+            <TouchableOpacity onPress={handleToogleFavorite}>
+              <MaterialIcons
+                name={favorite ? "favorite" : "favorite-border"}
+                size={25}
+                color={favorite ? primary : lightgray}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+      <SafeAreaView>
+        <ScrollView
+          contentInset={{ bottom: 30 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={30}
+        >
+          <ImageBackground
+            style={styles.image}
+            source={{
+              uri: recipe.imgUrl,
+            }}
+          ></ImageBackground>
+          <View style={styles.content}>
+            <Text style={styles.title}>{recipe.title}</Text>
+            <View style={styles.infoContainer}>
+              <View style={styles.infoContent}>
+                <MaterialIcons name="timer" size={30} color={primary} />
+                <Text style={styles.infoText}>{recipe.time}</Text>
+              </View>
+              <View style={styles.infoContent}>
+                <MaterialIcons
+                  name="people-outline"
+                  size={30}
+                  color={primary}
+                />
+                <Text style={styles.infoText}>2</Text>
+              </View>
+            </View>
+            <ButtonGroup
+              onPress={handleChangeTab}
+              selectedIndex={currentTab}
+              buttons={buttons}
+              buttonStyle={styles.buttonStyle}
+              selectedButtonStyle={styles.selectedButtonStyle}
+              buttonContainerStyle={styles.buttonContainerStyle}
+              innerBorderStyle={styles.innerBorderStyle}
+              containerStyle={styles.containerStyle}
+            />
+            {currentTab === 0 && (
+              <View style={styles.ingredientsListContainer}>
+                {recipe.ingredients.map((ingredient: Ingredient) => (
+                  <ListItem key={ingredient.label}>
                     <ListItem.Content style={styles.ingredientsList}>
                       <ListItem.Title
                         numberOfLines={2}
@@ -178,49 +155,47 @@ const RecipeDetail = ({ route, navigation }: AppNavProps<"Detail">) => {
                       <ListItem.Title>{ingredient.quantity}</ListItem.Title>
                     </ListItem.Content>
                   </ListItem>
-                </TouchableOpacity>
-              ))}
-              <Modal
-                isVisible={modalVisible}
-                onBackdropPress={() => setModalVisible(false)}
-                style={styles.shoppingModal}
-              >
-                <ShoppingModal
-                  ingredients={recipe.ingredients}
-                  saveShoppingList={handleSaveShoppingList}
-                  recipeId={recipe.id}
+                ))}
+                <Button
+                  style={styles.shoppingButton}
+                  titleStyle={{
+                    color: toShop ? "#2088dc" : "grey",
+                    opacity: 1,
+                  }}
+                  type={toShop ? "outline" : "clear"}
+                  disabled={!toShop}
+                  title={
+                    toShop
+                      ? "Ajouter à la liste de course"
+                      : "Ingredients ajouté à la liste"
+                  }
+                  onPress={handleAddToShoppingList}
                 />
-              </Modal>
-              <Button
-                style={styles.shoppingButton}
-                type="outline"
-                title="Ajouter à la liste à faire"
-                onPress={() => setModalVisible(true)}
-              />
-            </View>
-          )}
-          {currentTab === 1 &&
-            recipe.instructions.map(
-              (instruction: Instruction, index: number) => (
-                <ListItem key={index} bottomDivider>
-                  <ListItem.Content>
-                    <ListItem.Content style={styles.instructionHeader}>
-                      <View style={styles.step}>
-                        <Text style={styles.stepNumber}>
-                          {instruction.step}
-                        </Text>
-                      </View>
-                      <Text style={styles.stepText}>{instruction.title}</Text>
-                    </ListItem.Content>
-                    <ListItem.Subtitle>
-                      {instruction.instruction}
-                    </ListItem.Subtitle>
-                  </ListItem.Content>
-                </ListItem>
-              )
+              </View>
             )}
-        </View>
-      </ScrollView>
+            {currentTab === 1 &&
+              recipe.instructions.map(
+                (instruction: Instruction, index: number) => (
+                  <ListItem key={index} bottomDivider>
+                    <ListItem.Content>
+                      <ListItem.Content style={styles.instructionHeader}>
+                        <View style={styles.step}>
+                          <Text style={styles.stepNumber}>
+                            {instruction.step}
+                          </Text>
+                        </View>
+                        <Text style={styles.stepText}>{instruction.title}</Text>
+                      </ListItem.Content>
+                      <ListItem.Subtitle>
+                        {instruction.instruction}
+                      </ListItem.Subtitle>
+                    </ListItem.Content>
+                  </ListItem>
+                )
+              )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 };
@@ -236,10 +211,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
+  headerContainer: {
+    position: "absolute",
+    top: 0,
+    zIndex: 1,
+    width: "100%",
+  },
   topButtonsContainer: {
+    paddingTop: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 15,
+    paddingBottom: 15,
   },
   topButton: {
     height: 40,
@@ -326,9 +309,5 @@ const styles = StyleSheet.create({
   },
   stepText: {
     fontWeight: "bold",
-  },
-  shoppingModal: {
-    justifyContent: "flex-end",
-    margin: 0,
   },
 });
