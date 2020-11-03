@@ -3,11 +3,13 @@ import { Animated, StyleSheet, View } from "react-native";
 import { Ingredient, Recipe } from "../constants/Types";
 import { RecipesContext } from "../context/RecipesContext";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { RectButton } from "react-native-gesture-handler";
+import {
+  RectButton,
+  TouchableWithoutFeedback,
+} from "react-native-gesture-handler";
 
 import { ListItem, Text, Avatar } from "react-native-elements";
 import { saveRecipeLocalStorage } from "../helpers/recipeLocalStorage";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import ShoppingModal from "../components/ShoppingModal";
 import Modal from "react-native-modal";
 const ShopListScreen = () => {
@@ -51,21 +53,12 @@ const ShopListScreen = () => {
 
   if (!shoppingList.length) {
     return (
-      <View>
-        <Text>No Shopping List for now add products in recipes </Text>
+      <View style={styles.noContentContainer}>
+        <Text>Pas de recette dans votre liste de courses</Text>
       </View>
     );
   }
-  const renderRightActions = (recipe: Recipe) => {
-    return (
-      <RectButton
-        style={styles.deleteButton}
-        onPress={() => handleRemoveToShoppingList(recipe)}
-      >
-        <Animated.Text>Delete</Animated.Text>
-      </RectButton>
-    );
-  };
+
   return (
     <View>
       {shoppingList.length &&
@@ -73,10 +66,17 @@ const ShopListScreen = () => {
           return (
             <Swipeable
               key={recipe.id}
-              renderRightActions={() => renderRightActions(recipe)}
+              renderRightActions={() => (
+                <RectButton
+                  style={styles.deleteButton}
+                  onPress={() => handleRemoveToShoppingList(recipe)}
+                >
+                  <Text style={styles.deleteButtonText}>Supprimer</Text>
+                </RectButton>
+              )}
             >
               <View>
-                <TouchableOpacity
+                <TouchableWithoutFeedback
                   onPress={() => handleToggleRecipeIngredient(recipe)}
                 >
                   <ListItem>
@@ -92,7 +92,7 @@ const ShopListScreen = () => {
                       </ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
-                </TouchableOpacity>
+                </TouchableWithoutFeedback>
                 <Modal
                   isVisible={recipe.showIngredients}
                   style={styles.shoppingModal}
@@ -110,6 +110,11 @@ const ShopListScreen = () => {
 export default ShopListScreen;
 
 const styles = StyleSheet.create({
+  noContentContainer: {
+    flex: 1,
+    paddingTop: 15,
+    alignItems: "center",
+  },
   recipeSubtitle: {
     color: "grey",
     fontSize: 15,
@@ -125,7 +130,11 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: "red",
-    alignSelf: "center",
+    justifyContent: "center",
     height: "100%",
+    paddingHorizontal: 10,
+  },
+  deleteButtonText: {
+    color: "white",
   },
 });

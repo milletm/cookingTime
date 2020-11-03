@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, FlatList } from "react-native";
 import { AppNavProps } from "../navigation/AppScreenParamList";
 
 const HomeScreen = ({ route, navigation }: AppNavProps<"Home">) => {
-  const { state, dispatch } = useContext(RecipesContext);
+  const { state } = useContext(RecipesContext);
 
   return (
     <View style={styles.container}>
