@@ -1,0 +1,117 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`[RecipeListItem] RecipeListItem renders without crashing 1`] = `
+<View
+  accessible={true}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "opacity": 1,
+    }
+  }
+  testID="recipeListItemTouchable"
+>
+  <View
+    style={
+      Object {
+        "borderRadius": 10,
+        "marginVertical": 10,
+      }
+    }
+  >
+    <View
+      accessibilityIgnoresInvertColors={true}
+      style={
+        Object {
+          "borderRadius": 10,
+          "height": 250,
+          "paddingVertical": 15,
+          "shadowColor": "#000",
+          "shadowOffset": Object {
+            "height": 0,
+            "width": 0,
+          },
+          "shadowOpacity": 0.35,
+          "shadowRadius": 6,
+        }
+      }
+    >
+      <Image
+        source={
+          Object {
+            "uri": "https://s3.eu-central-1.amazonaws.com/media.quitoque.fr/recipe_w1536_h1024/recipes/images/tartare-au-couteau-de-buf-charolais-au-basilic/tartare-au-couteau-de-buf-charolais-au-basilic-1.jpg",
+          }
+        }
+        style={
+          Array [
+            Object {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+            Object {
+              "height": 250,
+              "width": undefined,
+            },
+            Object {
+              "borderRadius": 10,
+            },
+          ]
+        }
+      />
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "justifyContent": "flex-end",
+            "paddingHorizontal": 10,
+          }
+        }
+      >
+        <Text
+          style={
+            Object {
+              "color": "#FFF",
+              "fontFamily": "Damascus",
+              "fontSize": 25,
+              "fontWeight": "bold",
+              "shadowColor": "#000",
+              "shadowOffset": Object {
+                "height": 0,
+                "width": 0,
+              },
+              "shadowOpacity": 0.35,
+              "shadowRadius": 6,
+              "textTransform": "uppercase",
+              "width": "70%",
+            }
+          }
+        >
+          Tartare au couteau de bœuf charolais au basilic
+        </Text>
+        <Text
+          style={
+            Object {
+              "color": "#FFF",
+              "fontFamily": "Damascus",
+              "fontSize": 20,
+            }
+          }
+        >
+          35 min
+           minutes
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;

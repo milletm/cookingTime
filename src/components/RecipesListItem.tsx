@@ -1,14 +1,11 @@
-import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  ListRenderItem,
   ImageBackground,
 } from "react-native";
-import { AppScreenParamList } from "../constants/AppScreenParamList";
 import { Recipe } from "../constants/Types";
 interface Props {
   item: Recipe;
@@ -17,7 +14,11 @@ interface Props {
 
 const RecipesListItem: React.FC<Props> = ({ item, navigate }) => {
   return (
-    <TouchableOpacity activeOpacity={0.5} onPress={navigate}>
+    <TouchableOpacity
+      testID="recipeListItemTouchable"
+      activeOpacity={0.5}
+      onPress={navigate}
+    >
       <View style={styles.container}>
         <ImageBackground
           style={styles.backgroundImage}
